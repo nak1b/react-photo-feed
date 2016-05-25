@@ -1,8 +1,20 @@
 var React = require('react');
 var Router = require('react-router');
+var Reflux = require('reflux');
+var TopicStore = require('../store/topic-store');
+var Action = require('../actions');
 var Link = Router.Link;
 
 module.exports = React.createClass({
+  mixins: [ Reflux.listenTo(TopicStore, 'onChange')],
+  getInitialState: function(){
+    return {
+      topics: []
+    }
+  },
+  componentWillMount: function(){
+    Action.getTopics();
+  },
   render: function(){
     return <nav className="navbar navbar-default header">
         <div className="container-fluid">
@@ -10,10 +22,21 @@ module.exports = React.createClass({
             Photo Feed
           </Link>
           <ul className="nav navbar-nav navbar-right">
-            <li><a>Topic #1</a></li>
-            <li><a>Topic #2</a></li>
+            {this.renderTopics()}
           </ul>
         </div>
     </nav>
+  },
+  renderTopics: function(){
+    return this.state.topics.slice(0,5).map(function(topic){
+      return <li key={topic.id}>
+           <Link activeClassName="active" to={"topics/" + topic.id}>{topic.name}</Link>
+        </li>;
+    });
+  },
+  onChange: function(event, topics){
+    this.setState({
+      topics: topics
+    });
   }
 })
